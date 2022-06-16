@@ -7,6 +7,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class Main {
@@ -27,11 +33,11 @@ public class Main {
         CloseableHttpResponse response = httpClient.execute(request);
         Post post = mapper.readValue(response.getEntity().getContent(), new TypeReference<Post>() {});
         System.out.println(post);
-
-        HttpGet request2 = new HttpGet(post.getUrl());
-        CloseableHttpResponse response2 = httpClient.execute(request2);
-
-
-
+        String[] urlName = post.getUrl().split("/");
+        try (InputStream in = new URL(post.getUrl()).openStream()) {
+            Files.copy(in, Paths.get(urlName[urlName.length - 1]), StandardCopyOption.REPLACE_EXISTING);
+        }
+        httpClient.close();
+        response.close();
     }
 }
